@@ -250,7 +250,8 @@ public:
         }
     }
 
-    void displayAll() {
+    
+    void displayAll() { // Dislpay all the user's passwords
         unsigned char key[32] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
                          0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
                          0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33,
@@ -287,7 +288,7 @@ public:
             }
         }
     }
-};
+}; 
 
 string hashPassword(const string& password) {
     // Create a buffer to hold the hash
@@ -349,14 +350,14 @@ void newUser(User& user) {
 
     string hashedPassword = hashPassword(user.passwordHash); // Hash the user's password
 
-    // Open the file for this user in the designated userDataFolder
+    // Open the file for this user in the folder
     ofstream file(filesystem::path(userDataFolder) / (user.email + ".txt"));
     if (!file.is_open()) {
         cerr << "Error creating file for user.\n";
         return;
     }
 
-    // Write the email, hashed password, and name directly without encryption
+    // Write the email, hashed password, and name
     file << user.email << "\n" << hashedPassword << endl;
     cout << "Thank you for signing up with us, " << user.name << "!\n";
 }
@@ -371,16 +372,16 @@ bool verifyUser(const string& email, const string& inputPassword, User& user) {
         return false;
     }
 
-    // Directly read the email and hashed password, assuming they're not encrypted
+    // Directly read the email and hashed password
     string storedEmail, storedHashedPassword, name;
     getline(file, storedEmail); // Read stored email (first line)
     getline(file, storedHashedPassword); // Read stored hashed password (second line)
 
-    // No need to decrypt, just compare hashed values
+    // Compare hashed values
     if (hashPassword(inputPassword) == storedHashedPassword) {
         // Assuming User has a constructor or method to initialize it properly
         user.email = email;
-        user.passwordHash = storedHashedPassword; // Keep the hashed password or ignore it based on your design
+        user.passwordHash = storedHashedPassword; // To add to user file incase of password deletion
         user.name = name; // Assign the read name to the user object
 
         cout << "Login successful. Welcome back, " << name << "!\n";
@@ -409,6 +410,7 @@ string generateRandomPassword() {
     }
     return password;
 }
+
 void addUserPassword(User& user) {
     string label, passwordChoice, password;
     cout << "Please enter a label for your new password: ";
@@ -424,10 +426,11 @@ void addUserPassword(User& user) {
         getline(cin, password);
     }
 
+    //Use Hexadecimal values to avoid usage of null terminator
     unsigned char key[32] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
                          0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
                          0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33,
-                         0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31 }; // 32 bytes for AES-256, example key
+                         0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31 };
     unsigned char iv[16] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
                         0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35 };
 
@@ -444,9 +447,12 @@ void addUserPassword(User& user) {
         // Convert binary ciphertext to hex string for storage
         string encryptedPasswordHex = bin2hex(ciphertext, ciphertext_len);
 
-        user.passwords.put(label, encryptedPasswordHex);
+       
+        user.passwords.put(label, encryptedPasswordHex); //Adding password to the hashtable
 
-        ofstream file(filesystem::path(userDataFolder) / (user.email + ".txt"), ios::app);
+
+        //Adding password to user data file
+        ofstream file(filesystem::path(userDataFolder) / (user.email + ".txt"), ios::app); 
         if (!file) {
             cout << "Error updating file for user.\n";
             return;
@@ -459,7 +465,7 @@ void addUserPassword(User& user) {
     }
 }
 
-
+// Method to start the application engine
 void showMenu(User& user) {
     int choice;
     do {
@@ -493,6 +499,8 @@ void showMenu(User& user) {
                 if (hex2bin(encryptedPasswordHex, encryptedPasswordBin)) {
                     unsigned char decryptedPassword[1024]; // Ensure this buffer is large enough
                     int decryptedPasswordLen = 0;
+
+                    //Use Hexadecimal values to avoid usage of null terminator
                     unsigned char key[32] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
                          0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
                          0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33,
@@ -559,7 +567,7 @@ void showMenu(User& user) {
 
 int main() {
     int option;
-    User user; // Declare `user` here so it's accessible outside the if-else blocks.
+    User user; 
     bool isLoggedIn = false;
 
     cout << "Please choose an option: \n1. Sign Up\n2. Login\n";
