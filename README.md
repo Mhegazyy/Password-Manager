@@ -49,53 +49,6 @@ the password you wish to remove.
 
 Logout: To exit, select the logout option.
 
-# 3. Table of Unit Tests
-
-  --------------------------------------------------------------------------------------------------------------------------------------------------
-  Test   Description    Input          Expected       Actual Output
-  Case                                 Output         
-  ID                                                  
-  ------ -------------- -------------- -------------- ----------------------------------------------------------------------------------------------
-  TC1    Sign up with   Name, Email,   Success        ![](vertopal_02ff4434d0f042f78aabd28c53e016b2/media/image2.png){width="2.3229451006124235in"
-         valid details  Password       message, user  height="0.8614260717410324in"}
-                                       file created   
-
-  TC2    Login with     Email,         Login success  ![](vertopal_02ff4434d0f042f78aabd28c53e016b2/media/image3.png){width="2.0903619860017497in"
-         correct        Password       message        height="1.2274529746281715in"}
-         credentials                                  
-
-  TC3    Login with     Email,         Failure        ![](vertopal_02ff4434d0f042f78aabd28c53e016b2/media/image4.png){width="2.4478324584426945in"
-         incorrect      Incorrect      message        height="0.8760662729658792in"}
-         password       Password                      
-
-  TC4    Add a new      Label,         Password added ![](vertopal_02ff4434d0f042f78aabd28c53e016b2/media/image5.png){width="2.4836800087489066in"
-         password       Password       success        height="1.2030325896762906in"}
-                                       message        
-
-  TC5    Retrieve an    Label of       Display        ![](vertopal_02ff4434d0f042f78aabd28c53e016b2/media/image6.png){width="2.3546489501312338in"
-         existing       existing       decrypted      height="1.2285126859142608in"}
-         password       password       password       
-
-  TC6    Delete an      Label of       Password       ![](vertopal_02ff4434d0f042f78aabd28c53e016b2/media/image7.png){width="2.1464873140857392in"
-         existing       existing       deletion       height="1.12416447944007in"}
-         password       password       success        
-                                       message        
-
-  TC7    Attempt to     Non-existent   No password    ![](vertopal_02ff4434d0f042f78aabd28c53e016b2/media/image8.png){width="2.2774825021872265in"
-         retrieve a     label          found message  height="1.1162521872265967in"}
-         non-existent                                 
-         password                                     
-
-  TC8    Logout and     Logout option  Logout         ![](vertopal_02ff4434d0f042f78aabd28c53e016b2/media/image9.png){width="2.0770002187226595in"
-         exit the       selected       message,       height="1.446288276465442in"}
-         application                   application    
-                                       exits          
-  --------------------------------------------------------------------------------------------------------------------------------------------------
-
-# 4. Repository Link
-
-[Hegazy's Password
-Manager](https://github.com/Mhegazyy/Password-Manager)
 
 # 5. Description of Algorithms
 
