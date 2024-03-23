@@ -105,107 +105,79 @@ public:
     struct Node {
         string key;
         string value;
-        Node* next;
-        Node(const string& k, const string& v, Node* n = nullptr) : key(k), value(v), next(n) {}
+        bool occupied = false; // Indicates if the slot is occupied
+        bool isDeleted = false; // Indicates if the slot has been logically deleted
+        Node() : key(""), value(""), occupied(false), isDeleted(false) {}
     };
 
-    HashTable(size_t size) : table(new Node* [size]()), table_size(size), num_elements(0) {
-        for (size_t i = 0; i < size; ++i) {
-            table[i] = nullptr;
+private:
+    vector<Node> table;
+    size_t num_elements;
+    static const size_t default_size = 50; // Default size of the hash table
+
+    size_t hash(const string& key) const {
+        size_t hashValue = 0;
+        for (char c : key) {
+            hashValue = (hashValue * 31 + c) % table.size();
         }
+        return hashValue;
     }
 
-    ~HashTable() {
-        for (size_t i = 0; i < table_size; ++i) {
-            Node* current = table[i];
-            while (current != nullptr) {
-                Node* temp = current;
-                current = current->next;
-                delete temp;
-            }
-        }
-        delete[] table;
-    }
-
-    Node* getNodeAtIndex(size_t index) const {
-        if (index >= table_size) return nullptr; // Safety check
-        return table[index];
-    }
+public:
+    HashTable(size_t size = default_size) : table(size), num_elements(0) {}
 
     void put(const string& key, const string& value) {
         size_t index = hash(key);
-        Node* current = table[index];
-        while (current != nullptr) {
-            if (current->key == key) {
-                current->value = value;
-                return;
-            }
-            current = current->next;
+        while (table[index].occupied && table[index].key != key) {
+            index = (index + 1) % table.size();
         }
-        Node* new_node = new Node(key, value);
-        new_node->next = table[index];
-        table[index] = new_node;
-        ++num_elements;
+        if (!table[index].occupied || table[index].isDeleted) {
+            table[index].key = key;
+            table[index].value = value;
+            table[index].occupied = true;
+            table[index].isDeleted = false;
+            ++num_elements;
+        }
+        else if (table[index].key == key) {
+            // Update existing value
+            table[index].value = value;
+        }
     }
 
     string get(const string& key) {
         size_t index = hash(key);
-        Node* current = table[index];
-        while (current != nullptr) {
-            if (current->key == key) {
-                return current->value;
+        size_t start = index;
+        while (table[index].occupied || table[index].isDeleted) {
+            if (table[index].occupied && table[index].key == key) {
+                return table[index].value;
             }
-            current = current->next;
+            index = (index + 1) % table.size();
+            if (index == start) break; // Avoid infinite loop
         }
-        return "";
-    }
-
-    void forEachEntry(function<void(const string&, const string&)> func) const {
-        for (size_t i = 0; i < table_size; ++i) {
-            for (Node* node = table[i]; node != nullptr; node = node->next) {
-                func(node->key, node->value);
-            }
-        }
+        return ""; // Key not found
     }
 
     bool remove(const string& key) {
         size_t index = hash(key);
-        Node* current = table[index];
-        Node* prev = nullptr;
-
-        while (current != nullptr) {
-            if (current->key == key) {
-                if (prev) {
-                    prev->next = current->next;
-                }
-                else {
-                    // This was the first node in the list
-                    table[index] = current->next;
-                }
-                delete current; // Free the memory of the node
+        size_t start = index;
+        while (table[index].occupied || table[index].isDeleted) {
+            if (table[index].occupied && table[index].key == key && !table[index].isDeleted) {
+                table[index].isDeleted = true; // Mark as deleted
                 --num_elements;
-                return true; // Indicate successful removal
+                return true;
             }
-            prev = current;
-            current = current->next;
+            index = (index + 1) % table.size();
+            if (index == start) break; // Avoid infinite loop
         }
         return false; // Key not found
     }
 
-
-    size_t getTableSize() const { return table_size; }
-
-private:
-    Node** table;
-    size_t table_size;
-    size_t num_elements;
-
-    size_t hash(const string& key) {
-        size_t hash = 0;
-        for (char c : key) {
-            hash = (hash * 31 + c) % table_size;
+    void forEachEntry(function<void(const string&, const string&)> func) const {
+        for (const auto& node : table) {
+            if (node.occupied && !node.isDeleted) {
+                func(node.key, node.value);
+            }
         }
-        return hash;
     }
 };
 
@@ -250,45 +222,40 @@ public:
         }
     }
 
-    
-    void displayAll() { // Dislpay all the user's passwords
+
+    void displayAll() {
         unsigned char key[32] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
-                         0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
-                         0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33,
-                         0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31 };
+                                 0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
+                                 0x36, 0x37, 0x38, 0x39, 0x30, 0x31, 0x32, 0x33,
+                                 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30, 0x31 };
         unsigned char iv[16] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
-                        0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35 };
+                                0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35 };
 
-        for (size_t i = 0; i < passwords.getTableSize(); ++i) {
-            HashTable::Node* current = passwords.getNodeAtIndex(i);
-            while (current != nullptr) {
-                unsigned char decryptedPassword[1024]; // Ensure this buffer is large enough
-                int decryptedPassword_len;
+        passwords.forEachEntry([&](const string& label, const string& encryptedPasswordHex) {
+            unsigned char decryptedPassword[1024]; // Ensure this buffer is large enough
+            int decryptedPassword_len;
 
-                // Convert hex string to binary for decryption
-                vector<unsigned char> ciphertext;
-                if (!hex2bin(current->value, ciphertext)) {
-                    cout << "Error converting hex to binary." << endl;
-                    current = current->next;
-                    continue;
-                }
-
-                // Decrypt the password
-                if (decrypt(ciphertext.data(), ciphertext.size(), key, iv, decryptedPassword, decryptedPassword_len)) {
-                    // Ensure null-termination of the decrypted password
-                    decryptedPassword[decryptedPassword_len] = '\0';
-
-                    // Display label and decrypted password
-                    cout << "Label: " << current->key << "\nPassword: " << decryptedPassword << endl;
-                }
-                else {
-                    cerr << "Decryption failed." << endl;
-                }
-                current = current->next;
+            // Convert hex string to binary for decryption
+            vector<unsigned char> ciphertext;
+            if (!hex2bin(encryptedPasswordHex, ciphertext)) {
+                cout << "Error converting hex to binary for label: " << label << endl;
+                return; // Continue to next entry
             }
-        }
+
+            // Decrypt the password
+            if (decrypt(ciphertext.data(), ciphertext.size(), key, iv, decryptedPassword, decryptedPassword_len)) {
+                // Ensure null-termination of the decrypted password
+                decryptedPassword[decryptedPassword_len] = '\0';
+
+                // Display label and decrypted password
+                cout << "Label: " << label << "\nPassword: " << decryptedPassword << endl;
+            }
+            else {
+                cerr << "Decryption failed for label: " << label << endl;
+            }
+            });
     }
-}; 
+};
 
 string hashPassword(const string& password) {
     // Create a buffer to hold the hash
