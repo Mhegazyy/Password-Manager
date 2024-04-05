@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <openssl/evp.h>
 #include <openssl/err.h>
-#include <iomanip>
 #include <sstream>
 
 
@@ -117,8 +116,8 @@ private:
 
     size_t hash(const string& key) const {
         size_t hashValue = 0;
-        for (char c : key) {
-            hashValue = (hashValue * 31 + c) % table.size();
+        for (char e : key) {
+            hashValue = (hashValue * 31 + e) % table.size();
         }
         return hashValue;
     }
